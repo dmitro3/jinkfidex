@@ -1,0 +1,19 @@
+{
+  "network": "sepolia",
+  "chainId": "11155111",
+  "timestamp": "2026-03-27T08:05:24.055Z",
+  "deployer": "0x4BC0eCb18991D3eD1ca3B31D453d9C0C9301D24F",
+  "contracts": {
+    "weth9": "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14",
+    "v2Factory": "0x4Ad76DCe86BecEBC48Aba2f4dD0F685D6C3B7430",
+    "v2Router": "0x01faa5159FC0d9103efC0E8274fBD36D4f2e12DE",
+    "v3Factory": "0xD156649d5B844d9a72cF157c645c9aB0E016ccaf",
+    "nftDescriptor": "0xCFF38354777A565753Bbb5Fc9e5c4fb06792b3Ff",
+    "nftPositionDescriptor": "0xc41F4f59572e50A528088FD2AC573D037bBE675A",
+    "nonfungiblePositionManager": "0x582787a17A0cf0fdbf893771739E8C150446692e",
+    "v3SwapRouter": "0x0e2B6BE041806391534B18AD2AE1548d8AA088C4",
+    "quoterV2": "0xa4E0c4Fc04B3786bE5687B70Be9c5abEEae2d51f",
+    "tickLens": "0x9Cf536D7ddfd315b0CdB37ce59fe687E0Ba16020",
+    "universalRouter": "0xA1E608E29016430a486A88a2Da719DDdBdA054bC"
+  }
+}
