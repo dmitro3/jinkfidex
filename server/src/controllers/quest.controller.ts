@@ -135,7 +135,7 @@ const submitQuestSchema = z.object({
     points:      z.number().int().min(1).max(10000),
     required:    z.boolean().default(false),
     link:        z.string().url().optional(),
-    metadata:    z.record(z.unknown()).optional(),
+    metadata:    z.record(z.string(), z.unknown()).optional(),
   })).min(1).max(20),
   rewards: z.array(z.object({
     type:   z.string(),
@@ -182,7 +182,7 @@ export async function submitQuest(req: AuthRequest, res: Response) {
       startDate:   new Date(body.startDate),
       endDate:     new Date(body.endDate),
       tags:        body.tags,
-      tasksJson:   body.tasks,
+      tasksJson:   body.tasks as unknown as import("@prisma/client").Prisma.InputJsonValue,
       rewardsJson: body.rewards,
     },
   });
@@ -216,7 +216,7 @@ const reviewSchema = z.object({
 
 // POST /api/quests/submissions/:subId/approve  (admin only)
 export async function approveSubmission(req: AuthRequest, res: Response) {
-  const { subId } = req.params;
+  const subId = req.params.subId as string;
   const { adminNote } = reviewSchema.parse(req.body);
 
   const sub = await prisma.questSubmission.findUnique({ where: { id: subId } });
@@ -277,15 +277,15 @@ export async function approveSubmission(req: AuthRequest, res: Response) {
 
 // POST /api/quests/submissions/:subId/reject  (admin only)
 export async function rejectSubmission(req: AuthRequest, res: Response) {
-  const { subId } = req.params;
+  const subId = req.params.subId as string;
   const { adminNote } = reviewSchema.parse(req.body);
 
-  const sub = await prisma.questSubmission.findUnique({ where: { id: subId } });
+  const sub = await prisma.questSubmission.findUnique({ where: { id: subId as string } });
   if (!sub) throw new AppError(404, "Submission not found");
   if (sub.status !== "PENDING") throw new AppError(409, "Submission already reviewed");
 
   await prisma.questSubmission.update({
-    where: { id: subId },
+    where: { id: subId as string },
     data: { status: "REJECTED", adminNote, reviewedBy: req.user!.address, reviewedAt: new Date() },
   });
 
@@ -320,7 +320,7 @@ export async function listQuests(req: Request, res: Response) {
 
 // GET /api/quests/:id
 export async function getQuest(req: Request, res: Response) {
-  const { id } = req.params;
+  const id = req.params.id as string;
   const cacheKey = CacheKeys.quest(id);
   const cached = await cacheGet(cacheKey);
   if (cached) { res.setHeader("X-Cache", "HIT"); res.json(cached); return; }
@@ -336,14 +336,14 @@ export async function getQuest(req: Request, res: Response) {
 
   if (!quest) throw new AppError(404, "Quest not found");
 
-  const result = { ...quest, totalParticipants: quest._count.progress };
+  const result = { ...quest, totalParticipants: (quest as any)._count.progress };
   await cacheSet(cacheKey, result, env.CACHE_TTL_MEDIUM);
   res.json(result);
 }
 
 // GET /api/quests/:id/leaderboard
 export async function getLeaderboard(req: Request, res: Response) {
-  const { id } = req.params;
+  const id = req.params.id as string;
   const cacheKey = CacheKeys.questLeaderboard(id);
   const cached = await cacheGet(cacheKey);
   if (cached) { res.setHeader("X-Cache", "HIT"); res.json(cached); return; }
@@ -365,12 +365,12 @@ export async function getLeaderboard(req: Request, res: Response) {
     },
     _count: { taskId: true },
   });
-  const countMap = Object.fromEntries(completionCounts.map((c) => [c.userId, c._count.taskId]));
+  const countMap = Object.fromEntries(completionCounts.map((c) => [c.userId, (c._count as any).taskId]));
 
   const result = leaderboard.map((entry, i) => ({
     rank: i + 1,
-    address: entry.user.address,
-    username: entry.user.username,
+    address: (entry as any).user.address,
+    username: (entry as any).user.username,
     points: entry.pointsEarned,
     tasksCompleted: countMap[entry.userId] ?? 0,
   }));
@@ -381,7 +381,7 @@ export async function getLeaderboard(req: Request, res: Response) {
 
 // GET /api/quests/:id/progress  (auth required)
 export async function getUserProgress(req: AuthRequest, res: Response) {
-  const { id } = req.params;
+  const id = req.params.id as string;
 
   const progress = await prisma.questProgress.findUnique({
     where: { userId_questId: { userId: req.user!.id, questId: id } },
@@ -405,7 +405,8 @@ const verifyTaskSchema = z.object({
 
 // POST /api/quests/:id/tasks/:taskId/verify  (auth required)
 export async function verifyTask(req: AuthRequest, res: Response) {
-  const { id: questId, taskId } = req.params;
+  const questId = req.params.id as string;
+  const taskId = req.params.taskId as string;
   const { answer, txHash, chainId = 1, twitterUserId, discordUserId } = verifyTaskSchema.parse(req.body);
 
   // Check already completed

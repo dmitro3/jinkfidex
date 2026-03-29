@@ -20,7 +20,7 @@ export function errorHandler(err: Error, req: Request, res: Response, _next: Nex
   if (err instanceof ZodError) {
     res.status(400).json({
       error: "Validation error",
-      details: err.errors.map((e) => ({ field: e.path.join("."), message: e.message })),
+      details: (err as any).errors.map((e: any) => ({ field: e.path.join("."), message: e.message })),
     });
     return;
   }

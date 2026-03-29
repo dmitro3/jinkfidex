@@ -117,7 +117,7 @@ export async function myPerpsSubmissions(req: AuthRequest, res: Response) {
 
 // POST /api/perps/submissions/:id/approve
 export async function approvePerpsSubmission(req: AuthRequest, res: Response) {
-  const { id } = req.params;
+  const id = req.params.id as string;
   const { adminNote } = reviewSchema.parse(req.body);
 
   const sub = await prisma.perpsSubmission.findUnique({ where: { id } });
@@ -134,7 +134,7 @@ export async function approvePerpsSubmission(req: AuthRequest, res: Response) {
 
 // POST /api/perps/submissions/:id/reject
 export async function rejectPerpsSubmission(req: AuthRequest, res: Response) {
-  const { id } = req.params;
+  const id = req.params.id as string;
   const { adminNote } = reviewSchema.parse(req.body);
 
   const sub = await prisma.perpsSubmission.findUnique({ where: { id } });
